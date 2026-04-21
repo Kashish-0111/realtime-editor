@@ -18,12 +18,34 @@ const providerRef = useRef(null);
   const ydoc = useMemo(()=> new Y.Doc(),[])
   const yText = useMemo(()=> ydoc.getText("monaco"), [ydoc]);
 
+
+  
+  const COLORS = [
+ "#FF6B6B",  // Red
+  "#4ECDC4",  // Teal
+  "#45B7D1",  // Blue
+  "#96CEB4",  // Green
+  "#FF8C42",  // Orange
+  "#DDA0DD",  // Purple
+  "#E74C3C",  // Dark Red
+  "#2ECC71",  // Emerald
+]
+
+const getRandomColor = () => {
+  const index = Math.floor(Math.random() * COLORS.length)
+  return COLORS[index]
+}
+
+
+  const [userColor] = useState(() => getRandomColor())
+
   const handleMount=(editor)=>{
     editorRef.current = editor
     new MonacoBinding(
   yText,
   editorRef.current.getModel(),
   new Set([editorRef.current]),
+   providerRef.current?.awareness 
   
 
     
@@ -39,7 +61,11 @@ const providerRef = useRef(null);
        const provider = new SocketIOProvider("http://localhost:3000","monaco",ydoc,{
        autoConnect:true, 
     })
-    provider.awareness.setLocalStateField("user",{username})
+    providerRef.current = provider
+    
+    provider.awareness.setLocalStateField("user",{username
+      ,color:userColor
+    })
    
 
     const states= Array.from(provider.awareness.getStates().values())
@@ -87,13 +113,18 @@ const providerRef = useRef(null);
     )
   }
 
+
   return (
     <main className='h-screen w-full bg-gray-950 flex gap-4 p-4'>
      <aside className='h-full w-1/4 bg-amber-50 rounded-lg'>
       <h2 className='text-2xl font-bold p-4 border-b border-gray-300'>Users</h2>
       <ul className='p-4'>
         {users.map((user, index) => (
-          <li key={index} className='p-2 bg-gray-800 text-white rounded mb-2'>
+          <li key={index} className='p-2 bg-gray-800 text-white rounded mb-2 flex items-center gap-2'>
+          <span 
+            className='w-3 h-3 rounded-full inline-block' 
+            style={{ backgroundColor: user.color || "#fff" }}
+           />
             {user.username}
           </li>
         ))}
